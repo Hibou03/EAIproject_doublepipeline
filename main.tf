@@ -1,89 +1,96 @@
-provider "vsphere" {
-  user = var.vsphere_user                     #user vsphere
-  password = var.vsphere_password             #mdp vsphere
-  vsphere_server = var.vsphere_server         #@ du serveur vCenter
+terraform {
+  required_version = ">= 1.5.0"
 
-  allow_unverified_ssl = true                 #autorise connexion mm si le certif ssl n'est pas validé
-} 
+  required_providers {
+    vsphere = {
+      source  = "hashicorp/vsphere"
+      version = "2.3.0"
+    }
+  }
+}
+
+provider "vsphere" {
+  user                 = var.vsphere_user
+  password             = var.vsphere_password
+  vsphere_server       = var.vsphere_server
+  allow_unverified_ssl = true
+}
 
 # Déclaration du datacenter
 data "vsphere_datacenter" "dc" {
   name = var.datacenter
 }
 
-
-#Objet datastore ou sera stocké la vm
+# Objet datastore où sera stockée la VM
 data "vsphere_datastore" "datastore" {
-  name = var.datastore
+  name          = var.datastore
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 
-#Cluster de calcul (CPU,RAM...)
+# Cluster de calcul (CPU, RAM...)
 data "vsphere_compute_cluster" "cluster" {
-  name = var.cluster
+  name          = var.cluster
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 
-#Réseau sur lequel la VM sera connecté
+# Réseau sur lequel la VM sera connectée
 data "vsphere_network" "network" {
-  name = var.network
+  name          = var.network
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 
-#Récupèrer un template existant pour cloner la vm
+# Récupérer un template existant pour cloner la VM
 data "vsphere_virtual_machine" "template" {
-  name = var.template
+  name          = var.template
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 
-#Créer la vm en clonant un template
+# Créer la VM en clonant un template
 resource "vsphere_virtual_machine" "vm" {
-  name = var.vm_name
+  name             = var.vm_name
   resource_pool_id = data.vsphere_compute_cluster.cluster.resource_pool_id
-  datastore_id = data.vsphere_datastore.datastore.id
+  datastore_id     = data.vsphere_datastore.datastore.id
 
-  num_cpus = 4 #unité
-  memory = 2048
-  
-  tags = {
-    owner = "hiba"
-    # environment est volontairement manquant pour tester la règle
-  }
+  num_cpus = 4
+  memory   = 2048
+
+  # Tags corrigés en map(string)
+  tags = [
+  "owner:hiba",
+  "environment:dev"
+  ]
 
   guest_id = data.vsphere_virtual_machine.template.guest_id
 
+  # Config de l'interface réseau
+  network_interface {
+    network_id   = data.vsphere_network.network.id
+    adapter_type = data.vsphere_virtual_machine.template.network_interface_types[0]
+  }
 
-#Config de l'interface Réseau
-network_interface {
-  network_id = data.vsphere_network.network.id
-  adapter_type = data.vsphere_virtual_machine.template.network_interface_types[0]
-}
+  # Config du disque
+  disk {
+    label           = "disk0"
+    size            = data.vsphere_virtual_machine.template.disks[0].size
+    eagerly_scrub   = false
+    thin_provisioned = true
+  }
 
-#Config du disque
-disk {
-  label = "disk0" 
-  size = data.vsphere_virtual_machine.template.disks[0].size
-  eagerly_scrub = false
-  thin_provisioned = true
-}
+  # Clonage de la VM à partir du template
+  clone {
+    template_uuid = data.vsphere_virtual_machine.template.id
 
-#clonage de la vm à partir du template 
-clone {
-  template_uuid = data.vsphere_virtual_machine.template.id
-
-  #Personnalisation du sys (nom,ip...)
-  customize {
-    linux_options{
-      host_name = var.vm_name
-      domain = "local"
+    # Personnalisation du système (nom, IP...)
+    customize {
+      linux_options {
+        host_name = var.vm_name
+        domain    = "local"
+      }
+      network_interface {
+        ipv4_address = var.ipv4_adress
+        ipv4_netmask = 24
+      }
+      ipv4_gateway = var.ipv4_gateway
     }
-    network_interface{
-      ipv4_address = var.ipv4_adress
-      ipv4_netmask = 24
-    }
-    ipv4_gateway = var.ipv4_gateway
   }
 }
-}
-
-

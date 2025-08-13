@@ -1,16 +1,44 @@
-#Déclaration des variables dans main
+variable "vsphere_user" {
+  type        = string
+}
 
-variable "vsphere_user"{}
-variable "vsphere_password"{}
-variable "vsphere_server"{}
+variable "vsphere_password" {
+  type        = string
+  sensitive   = true
+}
 
-variable "datacenter" {}
-variable "datastore" {}
-variable "cluster" {}
-variable "network" {}
-variable "template" {}
-variable "vm_name" {}
-variable "ipv4_adress" {}
-variable "ipv4_gateway" {}
+variable "vsphere_server" {
+  type        = string
+}
 
+variable "datacenter" {
+  type        = string
+}
 
+variable "datastore" {
+  type        = string
+}
+
+variable "cluster" {
+  type        = string
+}
+
+variable "network" {
+  type        = string
+}
+
+variable "template" {
+  type        = string
+}
+
+variable "vm_name" {
+  type        = string
+}
+
+variable "ipv4_adress" {
+  type        = string
+}
+
+variable "ipv4_gateway" {
+  type        = string
+}
