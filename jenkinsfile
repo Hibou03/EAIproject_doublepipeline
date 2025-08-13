@@ -1,0 +1,52 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Récupération du code depuis la branche...'
+                checkout scm
+            }
+        }
+
+        stage('Tests') {
+            when { branch 'mr' } // ne teste que la branche MR
+            steps {
+                echo ' Début des tests...'
+
+                sh 'echo "=== Gitleaks Scan ==="'
+                sh 'gitleaks detect --source=.'
+
+                sh 'echo "=== TFLint ==="'
+                sh 'tflint --config=.tflint.hcl || true'
+
+                sh 'echo "=== Terraform Validate ==="'
+                sh 'terraform init -backend=false'
+                sh 'terraform validate'
+            }
+        }
+
+        stage('Merge into developer') {
+            when { branch 'mr' } // si tests ok
+            steps {
+                script {
+                    echo ' Fusion du code dans developer...'
+                    sh 'git config user.email "jenkins@example.com"'
+                    sh 'git config user.name "Jenkins"'
+                    sh 'git checkout developer'
+                    sh 'git merge mr'
+                    sh 'git push origin developer'
+                }
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo ' Les tests ont échoué. MR non fusionnée.'
+        }
+        success {
+            echo ' Tests réussis et MR fusionnée dans developer.'
+        }
+    }
+}
