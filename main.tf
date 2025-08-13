@@ -7,7 +7,7 @@ provider "vsphere" {
 } 
 
 # Déclaration du datacenter
-data "vsphere_datacenter" "dc" {
+  data "vsphere_datacenter" "dc" {
   name = var.datacenter
 }
 
