@@ -55,10 +55,10 @@ resource "vsphere_virtual_machine" "vm" {
   memory   = 2048
 
   # Tags corrigés en map(string)
-  tags = {
-    owner       = "hiba"
-    environment = "dev"
-  }
+  tags = [
+  "owner:hiba",
+  "environment:dev"
+  ]
 
   guest_id = data.vsphere_virtual_machine.template.guest_id
 
