@@ -42,3 +42,21 @@ variable "ipv4_adress" {
 variable "ipv4_gateway" {
   type        = string
 }
+
+variable "numcpus" {
+  type        = number
+}
+
+variable "memory" {
+  type        = number
+}
+
+variable "ipv4_netmask" {
+  type        = string
+}
+
+variable "segment" {
+  description = "Plage réseau pour la VM"
+  type        = string
+  default     = "192.168.10.0/24"
+}

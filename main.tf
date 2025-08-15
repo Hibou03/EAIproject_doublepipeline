@@ -51,10 +51,9 @@ resource "vsphere_virtual_machine" "vm" {
   resource_pool_id = data.vsphere_compute_cluster.cluster.resource_pool_id
   datastore_id     = data.vsphere_datastore.datastore.id
 
-  num_cpus = 4
-  memory   = 2048
+  num_cpus = var.numcpus
+  memory   = var.memory
 
-  # Tags corrigés en map(string)
   tags = [
   "owner:hiba",
   "environment:dev"
@@ -88,7 +87,7 @@ resource "vsphere_virtual_machine" "vm" {
       }
       network_interface {
         ipv4_address = var.ipv4_adress
-        ipv4_netmask = 24
+        ipv4_netmask = var.ipv4_netmask
       }
       ipv4_gateway = var.ipv4_gateway
     }
