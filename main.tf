@@ -117,7 +117,7 @@ provider "vsphere" {
   allow_unverified_ssl = true
 }
 
-# Déclaration du datacenter
+# Déclaration du datacenter 
 data "vsphere_datacenter" "dc" {
   name = var.datacenter
 }
