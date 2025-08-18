@@ -46,7 +46,7 @@ pipeline {
             echo ' Les tests ont échoué. MR non fusionnée.'
         }
         success {
-            echo ' Tests réussis et MR fusionnée dans developer.'
+            echo ' Tests réussis et MR fusionnée dans developer...'
         }
     }
 }
